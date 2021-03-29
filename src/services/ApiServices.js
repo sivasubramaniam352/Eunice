@@ -1,9 +1,9 @@
-import { CONFIG } from "Global/GlobalCreds";
 
+const URI = 'http://192.168.3.127:5050/v1'
 export const getUser = async (token) => {
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/user/getUserInfo`, {
+      response = await fetch(`${URI}/user/getUserInfo`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -29,7 +29,7 @@ export const getUser = async (token) => {
   export const signIn = async (creds) => {
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/user/simple/signIn`, {
+      response = await fetch(`${URI}/user/simple/signIn`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export const getUser = async (token) => {
   export const signUp = async (creds) => {
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/user/signUp`, {
+      response = await fetch(`${URI}/user/signUp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export const getUser = async (token) => {
   export const inviteUser = async(bod, token) =>{
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/workspace/user/invite`, {
+      response = await fetch(`${URI}/workspace/user/invite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export const getUser = async (token) => {
   export const addtoWs = async(creds) =>{
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/workspace/add/user`, {
+      response = await fetch(`${URI}/workspace/add/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +123,7 @@ export const getUser = async (token) => {
   export const createWs = async(creds) =>{
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/workspace/create`, {
+      response = await fetch(`${URI}/workspace/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,17 +144,44 @@ export const getUser = async (token) => {
     }
   } 
 
-  export const verifyOtp = async(otp, token) => {
+  export const otpSignIn = async(email) => {
+
     let response;
     try {
-      response = await fetch(`${CONFIG.serverUrl}/user/verifyCode`, {
+      response = await fetch(`${URI}/user/signIn`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+
+        },
+        
+        body:JSON.stringify(email)
+      });
+      if (response.status === 200) {
+        return await response.json();
+      } else if (response.status !== 401) {
+        return await response.json();
+      } else {
+        var errorResponse = await response.json();
+        throw new Error(errorResponse.error);
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  export const verifyOtp = async(otp, token) => {
+    console.log(otp, token);
+    let response;
+    try {
+      response = await fetch(`${URI}/user/verifyCode`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization:token
         },
         
-        body:JSON.stringify(otp)
+        body:JSON.stringify({confirmation_code:String(otp)})
       });
       if (response.status === 200) {
         return await response.json();
@@ -172,7 +199,7 @@ export const getUser = async (token) => {
 export const createChannel = async(bod) =>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/channel/create`, {
+    response = await fetch(`${URI}/channel/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -197,7 +224,7 @@ export const createChannel = async(bod) =>{
 export const getWorkSpaceInfo = async(wsId)=>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/workspace/getInfo?wsId=${wsId}`, {
+    response = await fetch(`${URI}/workspace/getInfo?wsId=${wsId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -218,7 +245,7 @@ export const getWorkSpaceInfo = async(wsId)=>{
 export const getInfoWsUsers = async(wsId) =>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/workspace/getAll/users/${wsId}`, {
+    response = await fetch(`${URI}/workspace/getAll/users/${wsId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -240,7 +267,7 @@ export const getInfoWsUsers = async(wsId) =>{
 export const kickout = async(bod) =>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/workspace/kickout/user`, {
+    response = await fetch(`${URI}/workspace/kickout/user`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -263,7 +290,7 @@ export const kickout = async(bod) =>{
 export const updateUserDesignation = async(bod) =>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/workspace/user/designation/update`, 
+    response = await fetch(`${URI}/workspace/user/designation/update`, 
     {
       method: "PUT",
       headers: {
@@ -285,9 +312,10 @@ export const updateUserDesignation = async(bod) =>{
 }
 
 export const getAllchats = async(workSpaceId,channelId,userId)=>{
+  console.log(workSpaceId,channelId,userId, "ID");
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/chat/getAll/${workSpaceId}/${channelId}/${userId}`, 
+    response = await fetch(`${URI}/chat/getAll/${workSpaceId}/${channelId}/${userId}`, 
     {
       method: "GET",
       headers: {
@@ -311,7 +339,7 @@ export const getAllchats = async(workSpaceId,channelId,userId)=>{
 export const addChat = async(bod) => {
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/chat/create`, 
+    response = await fetch(`${URI}/chat/create`, 
     {
       method: "POST",
       headers: {
@@ -335,7 +363,7 @@ export const addChat = async(bod) => {
 export const updateChat = async(bod, token) =>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/chat/update`, 
+    response = await fetch(`${URI}/chat/update`, 
     {
       method: "PUT",
       headers: {
@@ -361,7 +389,7 @@ export const updateChat = async(bod, token) =>{
 export const deleteChat = async(bod, token) =>{
   let response;
   try {
-    response = await fetch(`${CONFIG.serverUrl}/chat/remove`, 
+    response = await fetch(`${URI}/chat/remove`, 
     {
       method: "DELETE",
       headers: {

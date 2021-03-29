@@ -36,8 +36,6 @@
        <Index />
        </SafeAreaView>
      </GlobalProvider>
-     
-     
    );
  };
  

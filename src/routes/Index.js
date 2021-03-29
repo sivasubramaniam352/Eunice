@@ -8,7 +8,7 @@ import { GlobalContext } from '../services/Global/GlobalContext'
 
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getUserDetails } from '../services/ApiServices'
+import { getUser, } from '../services/ApiServices'
 import StackNav from './StackNav'
 import Login from '../views/Login'
 import AuthStack from './AuthStack'
@@ -23,26 +23,31 @@ const Index = () => {
     const token = await AsyncStorage.getItem('token');
     
    try {
-   let res = await getUserDetails(token);
+   let res = await getUser(token);
      if (res.success) {
      await  StateDispatch({type:'LOGIN', user:res.user})
+
       await setLoading(false);
      }
      else{
-         
+        await setLoading(false);
         await AsyncStorage.clear();
         await StateDispatch({type:'LOG_OUT'});
-        await setLoading(false);
+       
 
      }
    } catch (e) {
-     console.log(e);
+     console.log(e.message);
+     await setLoading(false);
+     await AsyncStorage.clear();
+     await StateDispatch({type:'LOG_OUT'});
    }
   }
   useEffect(() => {
 
    checkUserAuth()
   }, [])
+  
    if (loading === true) {
    return <View style={{flex:1, justifyContent:'center', alignContent:'center', alignItems:'center'}}>
 <Text style={{fontWeight:'bold'}}>Loading...</Text>

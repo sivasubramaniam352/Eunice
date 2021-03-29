@@ -1,11 +1,19 @@
+import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
+import Channels from '../views/Channels';
+import Chats from '../views/Chats';
+import WorkSpacesScreen from '../views/WorkSpacesScreen';
 
 const StackNav = () => {
+    const Stack = createStackNavigator();
+
     return (
-        <View>
-            <Text></Text>
-        </View>
+        <Stack.Navigator>
+         <Stack.Screen name={'workSpaces'} component={WorkSpacesScreen} />
+         <Stack.Screen name={'Channels'} component={Channels} />
+        <Stack.Screen name={'Chats'} component={Chats} />
+         </Stack.Navigator>
     )
 }
 

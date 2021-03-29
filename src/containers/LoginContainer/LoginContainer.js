@@ -4,10 +4,10 @@ import { Dimensions, Pressable,ImagePickerIOS, KeyboardAvoidingView, StyleSheet,
 import { diffClamp } from 'react-native-reanimated'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-import Icon from 'react-native-vector-icons/dist/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/dist/MaterialIcons'
 import Button from '../../components/Button/ButtonComp'
 import Input from '../../components/Input/Input'
-import { logIn } from '../../services/ApiServices'
+import { logIn, otpSignIn, signIn } from '../../services/ApiServices'
 import { GlobalContext } from '../../services/Global/GlobalContext'
 import LoginContStyle from './LoginContStyle'
 const scrHeight = Dimensions.get('screen').height;
@@ -16,75 +16,59 @@ const LoginContainer = () => {
     const {State, StateDispatch} = useContext(GlobalContext)
     const {dark, color} = State;
     const nav = useNavigation();
-    const [Form, setForm] = useState([{name:'email/phone',type:'Email/Phone',error:null,field:'emailOrphone' },
-    {name:'password',type:'password', error:null,field:'password'}]);
-    const [formData, setFormData] = useState({emailOrphone:'', password:''})
-    const [Err, setErr] = useState({emailOrphone:'', password:''})
+    const [formData, setFormData] = useState({email:''})
+    const [Err, setErr] = useState({email:''})
     const changeHandler = (name,e) =>{
 
-        console.log({[name]:e});
-        let formSt;
-        formSt =[...Form];
-        if (name === Form[1].field) {
-            setErr({...Err,password:''})
+        if (formData.email) {
+            const emailPattern = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+            let match = emailPattern.test(String(e).toLowerCase());
+            if (!match) {
+              setErr({ ...Err, email: "please enter valid email" });
+            } else {
+              setErr({ ...Err, email: "" });
+            }
+          }
+          return setFormData({...formData,[name]:e});
         }
-        if (name === Form[0].field) {
-            setErr({...Err,emailOrphone:''})
-        }
-        setForm(formSt);
-        return setFormData({...formData,[name]:e});
-    }
+        
+    
     const submitHandler = async() =>{
-        let errors = {...Err}
-        console.log(formData);
-        if ( formData.emailOrphone === undefined  || formData.emailOrphone === "" || formData.emailOrphone === null) {
+        if (Err.email) {
+            return
+        }
+      try {
+          let res = await otpSignIn(formData);
+          if (res.success) {
+            console.log(res.token);
+            await AsyncStorage.setItem('pretoken', res.token);
+            alert(res.message)
+            nav.navigate('OTP');
             
-            errors.emailOrphone = 'please enter Email or Phone';
-        }
-        if (formData.password === undefined || formData.password === '' || formData.password === null) {
-            
-         errors.password='please enter password'; 
-        }
-       setErr(errors);
-       if (errors.emailOrphone === '' && errors.password === ''){
-        try {
-            let res = await logIn(formData);
-            console.log(res);
-                if (res.success) {
-                    await AsyncStorage.setItem('token', res.token);
-                    // AsyncStorage.setItem('user', JSON.stringify(res.user))
-                   await StateDispatch({type:'LOGIN', user:res.user});
-                  }
-                  else{
-                      console.log(res.message);
-                      alert(res.message);
-                  }
-        } catch (e) {
-            console.log(e.message);
-            alert(e.message)
-        }
+          }
+          else{
+            console.log(res.error);
+          }
+      } catch (e) {
+          console.log(e.message);
+      }
     }
-    }
-    const FormMap = () =>{
-        return Form.map((data, key) =>(
-            <View key={key}>
+ 
+    return (
+        <View style={dark ? LoginContStyle.containerDark: LoginContStyle.container}>
+           <Icon name={'connect-without-contact'} size={scrWidth/1.2} color={'black'} />
+
+           <KeyboardAvoidingView style={LoginContStyle.FormCont}> 
+           <View>
             <Input 
-            PH={data.name}
-            type={data.type}
-            error={Err[data.field]}
-            password={data.name==='password'?true:false}
-            changeFunc={(e)=>changeHandler(data.field,e)}
+            PH={'email'}
+           
+            error={Err['email']}
+            
+            changeFunc={(e)=>changeHandler('email',e)}
             dark={dark ? dark: false}
             />
             </View>
-        ))
-    }
-    return (
-        <View style={dark ? LoginContStyle.containerDark: LoginContStyle.container}>
-           <Icon name={'food'} size={scrWidth/1.2} color={'red'} />
-
-           <KeyboardAvoidingView style={LoginContStyle.FormCont}> 
-           {FormMap()}
            <View  style={{flexDirection:'row' , justifyContent:'space-between'}}>
            <View  style={{flexDirection:'row' , justifyContent:'space-between'}}>
            {/* <Text>New to Crisp?</Text>
@@ -93,7 +77,7 @@ const LoginContainer = () => {
             </Pressable> */}
             </View>
            <Button 
-           title={'Sign In'}
+           title={'Send OTP'}
            pressFunc={()=>submitHandler()}
            />
            </View>
